@@ -13,7 +13,7 @@ const mockRoutes = [
     vesselType: 'Container',
     fuelType: 'HFO',
     year: 2024,
-    ghgIntensity: 91.0,
+    ghgIntensity: 85,
     fuelConsumption: 5000,
     distance: 12000,
     totalEmissions: 4500,
@@ -25,11 +25,11 @@ const mockRoutes = [
     vesselType: 'BulkCarrier',
     fuelType: 'LNG',
     year: 2024,
-    ghgIntensity: 88.0,
+    ghgIntensity: 88,
     fuelConsumption: 4800,
     distance: 11500,
     totalEmissions: 4200,
-    isBaseline: false
+    isBaseline: true
   },
   {
     id: '3',
@@ -37,7 +37,7 @@ const mockRoutes = [
     vesselType: 'Tanker',
     fuelType: 'MGO',
     year: 2024,
-    ghgIntensity: 92.5,
+    ghgIntensity: 92,
     fuelConsumption: 5500,
     distance: 13000,
     totalEmissions: 5100,
@@ -49,7 +49,7 @@ const mockRoutes = [
     vesselType: 'RoRo',
     fuelType: 'HFO',
     year: 2023,
-    ghgIntensity: 89.0,
+    ghgIntensity: 89,
     fuelConsumption: 4800,
     distance: 11000,
     totalEmissions: 4300,
@@ -127,12 +127,19 @@ app.get('/routes/comparison', async (req, res) => {
 app.get('/compliance/cb', async (req, res) => {
   try {
     const { shipId, year } = req.query as { shipId: string; year: string };
-    // Simple CB calculation for now
+    // CB calculation: (Target - Actual) * Energy in scope
+    // Energy in scope ≈ fuelConsumption * 41000 MJ/t
+    // Target is the baseline route's GHG intensity if set, otherwise default target
     const route = mockRoutes.find(r => r.routeId === shipId);
     if (!route) return res.status(404).json({ error: 'Route not found' });
 
-    const cb = (2.16 - route.ghgIntensity) * route.fuelConsumption;
-    res.json({ cbGco2eq: Math.max(0, cb) });
+    const baseline = mockRoutes.find(r => r.isBaseline);
+    const targetIntensity = baseline ? baseline.ghgIntensity : 89.3368; // Use baseline if set, else default target
+    const energyInScope = route.fuelConsumption * 41000; // MJ
+    const baseCb = (targetIntensity - route.ghgIntensity) * energyInScope;
+    const banked = bankedBalances[shipId]?.[parseInt(year)] || 0;
+    const adjustedCb = baseCb - banked;
+    res.json({ cbGco2eq: adjustedCb });
   } catch (error) {
     res.status(500).json({ error: 'Failed to compute CB' });
   }
@@ -147,10 +154,16 @@ app.get('/compliance/adjusted-cb', async (req, res) => {
     const adjustedCBs = mockRoutes
       .filter(r => r.year === yearInt)
       .map(route => {
-        const cb = (2.16 - route.ghgIntensity) * route.fuelConsumption;
+        // Adjusted CB calculation: (Target - Actual) * Energy in scope, minus banked
+        const baseline = mockRoutes.find(r => r.isBaseline);
+        const targetIntensity = baseline ? baseline.ghgIntensity : 89.3368;
+        const energyInScope = route.fuelConsumption * 41000; // MJ
+        const baseCb = (targetIntensity - route.ghgIntensity) * energyInScope;
+        const banked = bankedBalances[route.routeId]?.[yearInt] || 0;
+        const adjustedCb = baseCb - banked;
         return {
           shipId: route.routeId,
-          adjustedCb: Math.max(0, cb)
+          adjustedCb
         };
       });
     res.json(adjustedCBs);
@@ -175,7 +188,10 @@ app.post('/banking/bank', async (req, res) => {
     const route = mockRoutes.find(r => r.routeId === shipId);
     if (!route) return res.status(404).json({ error: 'Route not found' });
 
-    const cbBefore = (2.16 - route.ghgIntensity) * route.fuelConsumption;
+    const baseline = mockRoutes.find(r => r.isBaseline);
+    const targetIntensity = baseline ? baseline.ghgIntensity : 89.3368; // Use baseline if set, else default target
+    const energyInScope = route.fuelConsumption * 41000; // MJ
+    const cbBefore = (targetIntensity - route.ghgIntensity) * energyInScope;
     if (cbBefore <= 0) return res.status(400).json({ error: 'No surplus to bank' });
 
     // Bank the surplus
@@ -199,7 +215,10 @@ app.post('/banking/apply', async (req, res) => {
     const route = mockRoutes.find(r => r.routeId === shipId);
     if (!route) return res.status(404).json({ error: 'Route not found' });
 
-    const cbBefore = (2.16 - route.ghgIntensity) * route.fuelConsumption;
+    const baseline = mockRoutes.find(r => r.isBaseline);
+    const targetIntensity = baseline ? baseline.ghgIntensity : 89.3368; // Use baseline if set, else default target
+    const energyInScope = route.fuelConsumption * 41000; // MJ
+    const cbBefore = (targetIntensity - route.ghgIntensity) * energyInScope;
     const bankedAmount = bankedBalances[shipId]?.[year] || 0;
 
     if (bankedAmount < amount) return res.status(400).json({ error: 'Insufficient banked balance' });

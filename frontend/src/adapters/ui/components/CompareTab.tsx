@@ -110,10 +110,10 @@ export const CompareTab: React.FC<CompareTabProps> = ({ apiClient }) => {
                 </tr>
               </thead>
               <tbody>
-                {comparisonData.map((item) => {
+                {comparisonData.map((item, index) => {
                   const isCompliant = item.comparison.ghgIntensity <= currentTarget;
                   return (
-                    <tr key={item.baseline.id} className="hover:bg-gray-50">
+                    <tr key={`${item.baseline.id}-${item.comparison.id}-${index}`} className="hover:bg-gray-50">
                       <td className="border p-2">{item.baseline.routeId}</td>
                       <td className="border p-2">{item.baseline.ghgIntensity.toFixed(2)}</td>
                       <td className="border p-2">{item.comparison.ghgIntensity.toFixed(2)}</td>

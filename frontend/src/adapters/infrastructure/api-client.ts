@@ -36,7 +36,7 @@ export class ApiClient {
   // Compliance
   async getComplianceBalance(shipId: string, year: number): Promise<number> {
     const response = await this.client.get(`/compliance/cb?shipId=${shipId}&year=${year}`);
-    return response.data.cb;
+    return response.data.cbGco2eq;
   }
 
   async bankComplianceBalance(shipId: string, year: number): Promise<ComplianceBalance> {
