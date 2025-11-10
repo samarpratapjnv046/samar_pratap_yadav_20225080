@@ -6,7 +6,7 @@ class FetchRoutesUseCase {
     constructor(routeRepo) {
         this.routeRepo = routeRepo;
     }
-    async execute() {
+    async execute(filters) {
         return this.routeRepo.findAll();
     }
 }

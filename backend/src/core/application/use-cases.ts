@@ -18,7 +18,7 @@ import {
 export class FetchRoutesUseCase {
   constructor(private routeRepo: RouteRepository) {}
 
-  async execute(): Promise<Route[]> {
+  async execute(filters?: { vesselType?: string; fuelType?: string; year?: number }): Promise<Route[]> {
     return this.routeRepo.findAll();
   }
 }

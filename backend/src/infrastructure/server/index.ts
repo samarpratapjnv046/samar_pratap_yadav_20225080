@@ -147,20 +147,14 @@ app.get('/compliance/cb', async (req, res) => {
 
 app.get('/compliance/adjusted-cb', async (req, res) => {
   try {
-    const { year } = req.query as { year: string };
-    if (!year) return res.status(400).json({ error: 'Year is required' });
-
-    const yearInt = parseInt(year);
     const adjustedCBs = mockRoutes
-      .filter(r => r.year === yearInt)
       .map(route => {
         // Adjusted CB calculation: (Target - Actual) * Energy in scope, minus banked
         const baseline = mockRoutes.find(r => r.isBaseline);
         const targetIntensity = baseline ? baseline.ghgIntensity : 89.3368;
         const energyInScope = route.fuelConsumption * 41000; // MJ
         const baseCb = (targetIntensity - route.ghgIntensity) * energyInScope;
-        const banked = bankedBalances[route.routeId]?.[yearInt] || 0;
-        const adjustedCb = baseCb - banked;
+        const adjustedCb = baseCb;
         return {
           shipId: route.routeId,
           adjustedCb

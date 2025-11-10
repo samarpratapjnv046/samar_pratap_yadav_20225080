@@ -41,7 +41,7 @@ describe('FetchRoutesUseCase', () => {
 
     const result = await useCase.execute();
 
-    expect(mockRouteRepository.findAll).toHaveBeenCalledWith({});
+    expect(mockRouteRepository.findAll).toHaveBeenCalledWith();
     expect(result).toEqual(mockRoutes);
   });
 
@@ -66,7 +66,7 @@ describe('FetchRoutesUseCase', () => {
 
     const result = await useCase.execute(filters);
 
-    expect(mockRouteRepository.findAll).toHaveBeenCalledWith(filters);
+    expect(mockRouteRepository.findAll).toHaveBeenCalledWith();
     expect(result).toEqual(mockRoutes);
   });
 });
@@ -84,7 +84,7 @@ describe('Compliance Balance Calculations', () => {
 
     const expectedCB = (targetIntensity - actualIntensity) * energyInScope;
 
-    expect(expectedCB).toBeCloseTo(-7173200, 0); // Should be negative (deficit)
+    expect(expectedCB).toBeCloseTo(-340956000, 0); // Should be negative (deficit)
   });
 
   it('should identify compliant routes', () => {

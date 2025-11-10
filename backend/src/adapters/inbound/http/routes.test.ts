@@ -11,7 +11,7 @@ jest.mock('../../../core/application/use-cases', () => ({
   SetBaselineUseCase: jest.fn().mockImplementation(() => ({
     execute: jest.fn(),
   })),
-  GetComparisonUseCase: jest.fn().mockImplementation(() => ({
+  ComputeComparisonUseCase: jest.fn().mockImplementation(() => ({
     execute: jest.fn(),
   })),
 }));
@@ -164,7 +164,7 @@ describe('Routes API', () => {
         },
       ];
 
-      const mockGetComparisonUseCase = new (require('../../../core/application/use-cases').GetComparisonUseCase)();
+      const mockGetComparisonUseCase = new (require('../../../core/application/use-cases').ComputeComparisonUseCase)();
       mockGetComparisonUseCase.execute.mockResolvedValue(mockComparison);
 
       const response = await request(app).get('/routes/comparison');

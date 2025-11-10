@@ -3,7 +3,11 @@ import { Route, ShipCompliance, BankEntry, Pool } from '../domain/entities';
 export declare class FetchRoutesUseCase {
     private routeRepo;
     constructor(routeRepo: RouteRepository);
-    execute(): Promise<Route[]>;
+    execute(filters?: {
+        vesselType?: string;
+        fuelType?: string;
+        year?: number;
+    }): Promise<Route[]>;
 }
 export declare class SetBaselineUseCase {
     private routeRepo;
