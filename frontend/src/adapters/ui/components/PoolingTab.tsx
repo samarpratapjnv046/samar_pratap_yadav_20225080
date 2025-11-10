@@ -16,6 +16,8 @@ export const PoolingTab: React.FC<PoolingTabProps> = ({ apiClient }) => {
 
   useEffect(() => {
     loadAdjustedCBs();
+    setSelectedMembers([]);
+    setPoolResult(null);
   }, [year]);
 
   const loadAdjustedCBs = async () => {
@@ -23,8 +25,6 @@ export const PoolingTab: React.FC<PoolingTabProps> = ({ apiClient }) => {
     try {
       const data = await apiClient.getAdjustedCBs(year);
       setAdjustedCBs(data);
-      setSelectedMembers([]);
-      setPoolResult(null);
     } catch (err) {
       setError('Failed to load adjusted CBs');
       console.error(err);

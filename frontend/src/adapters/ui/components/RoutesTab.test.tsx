@@ -1,12 +1,14 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { RoutesTab } from './RoutesTab';
 import { ApiClient } from '../../infrastructure/api-client';
 
 // Mock the ApiClient
-jest.mock('../../infrastructure/api-client', () => ({
-  ApiClient: jest.fn().mockImplementation(() => ({
-    fetchRoutes: jest.fn(),
-    setBaseline: jest.fn(),
+vi.mock('../../infrastructure/api-client', () => ({
+  ApiClient: vi.fn().mockImplementation(() => ({
+    fetchRoutes: vi.fn(),
+    setBaseline: vi.fn(),
   })),
 }));
 
@@ -14,7 +16,7 @@ const mockApiClient = new ApiClient();
 
 describe('RoutesTab', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should render the routes table', async () => {
@@ -39,8 +41,10 @@ describe('RoutesTab', () => {
 
     await waitFor(() => {
       expect(screen.getByText('R001')).toBeInTheDocument();
-      expect(screen.getByText('Container')).toBeInTheDocument();
-      expect(screen.getByText('HFO')).toBeInTheDocument();
+      // Check for specific table content to avoid dropdown conflicts
+      const tableRows = screen.getAllByRole('row');
+      expect(tableRows[1]).toHaveTextContent('Container');
+      expect(tableRows[1]).toHaveTextContent('HFO');
     });
   });
 

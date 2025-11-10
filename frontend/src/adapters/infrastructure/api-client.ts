@@ -51,7 +51,7 @@ export class ApiClient {
 
   // Pools
   async getAdjustedCBs(year: number): Promise<{ shipId: string; adjustedCb: number }[]> {
-    const response = await this.client.get(`/compliance/adjusted-cb?year=${year}`);
+    const response = await this.client.get(`/compliance/adjusted-cb`);
     return response.data;
   }
 
